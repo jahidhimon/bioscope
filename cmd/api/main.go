@@ -29,22 +29,20 @@ func main() {
 	flag.StringVar(&cfg.env, "env", "development", "Environment to run the server")
 	flag.Parse()
 
-	logger := log.New(os.Stdout, "INFO:", log.Ldate | log.Ltime)
+	logger := log.New(os.Stdout, "IN: ", log.Ldate | log.Ltime)
 
 	app := &application{
 		config: cfg,
 		logger: logger,
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/v1/healthcheck", app.healthcheckHandler)
-
 	srv := &http.Server{
 		Addr: fmt.Sprintf(":%d", cfg.port),
-		Handler: mux,
+		Handler: app.routes(),
 		IdleTimeout: time.Minute,
 		ReadTimeout: 10 * time.Second,
 		WriteTimeout: 30 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	logger.Printf("starting %s server on %s", cfg.env, srv.Addr)
